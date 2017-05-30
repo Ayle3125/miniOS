@@ -8,6 +8,15 @@
 #ifndef	_ORANGES_CONST_H_
 #define	_ORANGES_CONST_H_
 
+/* the assert macro */
+//#define ASSERT
+#ifdef ASSERT
+void assertion_failure(char *exp, char *file, char *base_file, int line);
+#define assert(exp)  if (exp) ; \
+        else assertion_failure(#exp, __FILE__, __BASE_FILE__, __LINE__)
+#else
+#define assert(exp)
+#endif
 
 /* EXTERN */
 #define	EXTERN	extern	/* EXTERN is defined as extern except in global.c */
@@ -32,6 +41,10 @@
 #define	RPL_KRNL	SA_RPL0
 #define	RPL_TASK	SA_RPL1
 #define	RPL_USER	SA_RPL3
+
+/* Process */
+#define SENDING   0x02	/* set when proc trying to send */
+#define RECEIVING 0x04	/* set when proc trying to recv */
 
 /* 8259A interrupt controller ports. */
 #define	INT_M_CTL	0x20	/* I/O port for interrupt controller         <Master> */
@@ -61,7 +74,34 @@
 #define	PRINTER_IRQ	7
 #define	AT_WINI_IRQ	14	/* at winchester */
 
+/* tasks */
+/* 注意 TASK_XXX 的定义要与 global.c 中对应 */
+#define INVALID_DRIVER	-20
+#define INTERRUPT	-10
+#define TASK_SENDMSG	0
+#define TASK_RECVMSG	1
+#define ANY		(NR_TASKS + NR_PROCS + 10)
+#define NO_TASK		(NR_TASKS + NR_PROCS + 20)
+
 /* system call */
-#define NR_SYS_CALL     1
+#define NR_SYS_CALL     3
+/**
+ * @enum msgtype
+ * @brief MESSAGE types
+ */
+enum msgtype {
+	/*
+	 * when hard interrupt occurs, a msg (with type==HARD_INT) will
+	 * be sent to some tasks
+	 */
+	HARD_INT = 1,
+
+	/* SYS task */
+	GET_TICKS,
+};
+
+#define	RETVAL		u.m3.m3i1
+#define MAX_MSG   (10)
+
 
 #endif /* _ORANGES_CONST_H_ */

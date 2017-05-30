@@ -8,10 +8,10 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
 #include "global.h"
+#include "proto.h"
 
 
 /*======================================================================*
@@ -27,7 +27,7 @@ PUBLIC int kernel_main()
 	u16		selector_ldt	= SELECTOR_LDT_FIRST;
 	int i;
 	for (i = 0; i < NR_TASKS; i++) {
-		strcpy(p_proc->p_name, p_task->name);	// name of the process
+		strcpy(p_proc->name, p_task->name);	// name of the process
 		p_proc->pid = i;			// pid
 
 		p_proc->ldt_sel = selector_ldt;
@@ -87,47 +87,51 @@ PUBLIC int kernel_main()
 /*======================================================================*
                                TestA
  *======================================================================*/
-void TestA()
+int TestA()
 {
 	int i = 0;
 	while (1) {
 		disp_str("A.");
 		milli_delay(10);
 	}
+	return 0;
 }
 
 /*======================================================================*
                                TestB
  *======================================================================*/
-void TestB()
+int TestB()
 {
 	int i = 0x1000;
 	while(1){
 		disp_str("B.");
 		milli_delay(10);
 	}
+	return 0;
 }
 
 /*======================================================================*
                                TestC
  *======================================================================*/
-void TestC()
+int TestC()
 {
 	int i = 0x2000;
 	while(1){
 		disp_str("C.");
 		milli_delay(10);
 	}
+	return 0;
 }
 
 /*======================================================================*
                                TestD
  *======================================================================*/
-void TestD()
+int TestD()
 {
 	int i = 0x2000;
 	while(1){
 		disp_str("DCY amazing! ");
 		milli_delay(10);
 	}
+	return 0;
 }

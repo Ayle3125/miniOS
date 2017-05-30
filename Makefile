@@ -12,14 +12,14 @@ ENTRYOFFSET	=   0x400
 
 # Programs, flags, etc.
 ASM		= nasm
-DASM		= ndisasm
+DASM		= objdump
 CC		= gcc
 LD		= ld
 ASMBFLAGS	= -I boot/include/
 ASMKFLAGS	= -I include/ -f elf32
 CFLAGS		= -fno-stack-protector -m32 -I include/ -c -fno-builtin
 LDFLAGS		= -m elf_i386 -s -Ttext $(ENTRYPOINT)
-DASMFLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
+DASMFLAGS	= -D
 
 # This Program
 ORANGESBOOT	= boot/boot.bin boot/loader.bin

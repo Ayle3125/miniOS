@@ -8,9 +8,9 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "proc.h"
 #include "global.h"
+#include "proto.h"
 
 
 /* 本文件内函数声明 */
@@ -285,4 +285,3 @@ PUBLIC void exception_handler(int vec_no, int err_code, int eip, int cs, int efl
 		disp_int(err_code);
 	}
 }
-

@@ -8,10 +8,10 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
 #include "global.h"
+#include "proto.h"
 
 
 /*======================================================================*
@@ -43,4 +43,3 @@ PUBLIC void milli_delay(int milli_sec)
 
         while(((get_ticks() - t) * 1000 / HZ) < milli_sec) {}
 }
-
