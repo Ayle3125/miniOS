@@ -52,9 +52,11 @@ typedef struct proc {
 				    * the task is not ready to deal with it.
 				    */
 
-	MESSAGE* msg_head;   /**
+	//MESSAGE* msg_head;   /**
+	MESSAGE msg_queue[MAX_MSG];   /**
 				    * the head of the MESSAGE queue
 				    */
+	int msg_head;
 	int nr_recvmsg;/**
 				    * the number of RECEIVE MESSAGE
 				    */
@@ -70,7 +72,7 @@ typedef struct s_task {
 #define proc2pid(x) (x - proc_table)
 
 /* Number of tasks */
-#define NR_TASKS	2
+#define NR_TASKS	1
 #define NR_PROCS	4
 #define FIRST_PROC	proc_table[0]
 #define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
@@ -79,13 +81,13 @@ typedef struct s_task {
 /* stacks of tasks */
 #define STACK_SIZE_sendmsg		0x8000
 #define STACK_SIZE_recvmsg		0x8000
+#define STACK_SIZE_MSG		0x8000
 #define STACK_SIZE_TESTA	0x8000
 #define STACK_SIZE_TESTB	0x8000
 #define STACK_SIZE_TESTC	0x8000
 #define STACK_SIZE_TESTD	0x8000
 
-#define STACK_SIZE_TOTAL	(STACK_SIZE_sendmsg + \
-				STACK_SIZE_recvmsg + \
+#define STACK_SIZE_TOTAL	(STACK_SIZE_MSG+\
 				STACK_SIZE_TESTA + \
 				STACK_SIZE_TESTB + \
 				STACK_SIZE_TESTC+ \

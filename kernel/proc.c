@@ -22,7 +22,7 @@ PUBLIC void schedule()
 	int	 greatest_ticks = 0;
 
 	while (!greatest_ticks) {
-		for (p = proc_table; p < proc_table+NR_TASKS; p++) {
+		for (p = &FIRST_PROC; p < &LAST_PROC; p++) {
 			if (p->ticks > greatest_ticks) {
 				greatest_ticks = p->ticks;
 				p_proc_ready = p;
@@ -30,7 +30,7 @@ PUBLIC void schedule()
 		}
 
 		if (!greatest_ticks) {
-			for (p = proc_table; p < proc_table+NR_TASKS; p++) {
+			for (p = &FIRST_PROC; p < &LAST_PROC; p++) {
 				p->ticks = p->priority;
 			}
 		}
@@ -110,21 +110,20 @@ PUBLIC int sys_get_ticks()
  *
  * @return Zero if success.
  *****************************************************************************/
-PUBLIC int sys_msg_send(PROCESS* current, int dest, MESSAGE* m)
+PUBLIC int sys_msg_send(int pid, int dest, MESSAGE* m, PROCESS* current)
 {
 	PROCESS* sender = current;
 	PROCESS* p_dest = proc_table + dest; /* proc dest */
 
-	/* check for deadlock here */
-	//if (deadlock(proc2pid(sender), dest)) {
-		//panic(">>DEADLOCK<< %s->%s", sender->name, p_dest->name);
-		//TODO
-	//}
-
-	if ((p_dest->p_flags & RECEIVING) && p_dest->nr_recvmsg < MAX_MSG) {
-		MESSAGE* msg_tail = p_dest->msg_head;
-		while (msg_tail->next_msg)
-			msg_tail = msg_tail->next_msg;
+//	if ((p_dest->p_flags & RECEIVING) && p_dest->nr_recvmsg < MAX_MSG) {
+	if ( p_dest->nr_recvmsg < MAX_MSG) {
+		 int tail = (p_dest->msg_head + p_dest->nr_recvmsg)%MAX_MSG;
+		 MESSAGE* msg_tail = &p_dest->msg_queue[tail];
+		//MESSAGE* msg_tail = p_dest->msg_head;
+		//while (msg_tail->next_msg)
+		//	msg_tail = msg_tail->next_msg;
+		//msg_tail = m;
+ 		//msg_tail->next_msg = 0;
 		phys_copy(va2la(dest, msg_tail),
 			  va2la(proc2pid(sender), m),
 			  sizeof(MESSAGE));
@@ -133,7 +132,7 @@ PUBLIC int sys_msg_send(PROCESS* current, int dest, MESSAGE* m)
 	}
 	else { /* dest is not waiting for the msg */
 		//TODO
-		return -1;
+		return 1;
 	}
 
 	return 0;
@@ -152,29 +151,21 @@ PUBLIC int sys_msg_send(PROCESS* current, int dest, MESSAGE* m)
  *
  * @return  Zero if success.
  *****************************************************************************/
-PUBLIC int sys_msg_receive(PROCESS* current, int src, MESSAGE* m)
+PUBLIC int sys_msg_receive(int src, int dest, MESSAGE* m, PROCESS* current)
 {
-	PROCESS* p_recv = current; /**
-						  * This name is a little bit
-						  * wierd, but it makes me
-						  * think clearly, so I keep
-						  * it.
-						  */
+	PROCESS* p_recv = current;
 
-	if ((p_recv->has_int_msg) &&
+	if ((0) &&
 	    ((src == ANY) || (src == INTERRUPT))) {
 		/* There is an interrupt needs p_who_wanna_recv's handling and
 		 * p_who_wanna_recv is ready to handle it.
 		 */
-
 		MESSAGE msg;
 		reset_msg(&msg);
 		msg.source = INTERRUPT;
 		msg.type = HARD_INT;
-
 		phys_copy(va2la(proc2pid(p_recv), m), &msg,
 			  sizeof(MESSAGE));
-
 		p_recv->has_int_msg = 0;
 
 		return 0;
@@ -186,12 +177,17 @@ PUBLIC int sys_msg_receive(PROCESS* current, int src, MESSAGE* m)
 		 * messaged in the queue.
 		 */
 		 /* copy the message */
-		 phys_copy(va2la(proc2pid(p_recv), m),
-		 		va2la(proc2pid(p_recv), p_recv->msg_head),
-		  	sizeof(MESSAGE));
-
+		 //phys_copy(va2la(proc2pid(p_recv), m),
+		//		va2la(proc2pid(p_recv), p_recv->msg_head),
+		//  	sizeof(MESSAGE));
+		 //strcpy(m->content, "Good News!");
+		MESSAGE* msg_head = &p_recv->msg_queue[p_recv->msg_head];
+ 		phys_copy(va2la(proc2pid(current), m),
+ 			  va2la(proc2pid(current), msg_head),
+ 			  sizeof(MESSAGE));
 		 p_recv->nr_recvmsg--;
-		 p_recv->msg_head =  p_recv->msg_head->next_msg;
+		 //p_recv->msg_head =  p_recv->msg_head->next_msg;
+		 p_recv->msg_head = (p_recv->msg_head+1)%MAX_MSG;
 	}
 	else {  /* nobody's sending any msg */
 		/* Set p_flags so that p_who_wanna_recv will not

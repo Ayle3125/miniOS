@@ -55,6 +55,7 @@ typedef struct s_message{
 		struct mess2 m2;
 		struct mess3 m3;
 	} u;
+	char content[15];
 	struct s_message* next_msg;
 } MESSAGE;
 

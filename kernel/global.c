@@ -20,8 +20,10 @@ PUBLIC	PROCESS		proc_table[NR_TASKS + NR_PROCS];
 PUBLIC	char			task_stack[STACK_SIZE_TOTAL];
 
 PUBLIC	TASK	task_table[NR_TASKS] = {
-	{sys_msg_send, STACK_SIZE_sendmsg, "sendmsg"},
-	{sys_msg_receive, STACK_SIZE_recvmsg, "recvmsg"}};
+	{ task_dispatch_msg, STACK_SIZE_recvmsg, "dispatch_msg"}
+	//{sys_msg_send, STACK_SIZE_sendmsg, "sendmsg"},
+	//{sys_msg_receive, STACK_SIZE_recvmsg, "recvmsg"}
+	};
 
 PUBLIC	TASK	user_proc_table[NR_PROCS] = {
 					{TestA, STACK_SIZE_TESTA, "TestA"},

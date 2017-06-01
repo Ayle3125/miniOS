@@ -50,11 +50,16 @@ PUBLIC	void*	va2la(int pid, void* va);
 PUBLIC	int	  ldt_seg_linear(PROCESS* p, int idx);
 PUBLIC	void	reset_msg(MESSAGE* p);
 PUBLIC  int   sys_get_ticks();
-PUBLIC  int   sys_msg_send(PROCESS* current, int dest, MESSAGE* m);
-PUBLIC  int   sys_msg_receive(PROCESS* current, int src, MESSAGE* m);
+PUBLIC  int   sys_msg_send(int pid, int dest, MESSAGE* m, PROCESS* current);
+PUBLIC  int   sys_msg_receive(int pid, int dest, MESSAGE* m, PROCESS* current);
+
+/* proc.c */
+PUBLIC int task_dispatch_msg();
 
 /* syscall.asm */
 PUBLIC  void   sys_call();             /* int_handler */
 PUBLIC  int    get_ticks();
 /* 系统调用 - 用户级 */
-PUBLIC	int	sendrec(int function, int src_dest, MESSAGE* p_msg);
+//PUBLIC	int	sendrec(int function, int src_dest, MESSAGE* p_msg);
+PUBLIC	int	sendmsg(int pid, int src_dest, MESSAGE* msg);
+PUBLIC	int	recvmsg(int pid, int src_dest, MESSAGE* msg);
