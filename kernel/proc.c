@@ -23,7 +23,7 @@ PUBLIC void schedule()
 
 	while (!greatest_ticks) {
 		for (p = &FIRST_PROC; p < &LAST_PROC; p++) {
-			if (p->ticks > greatest_ticks) {
+			if (p->p_flags == 0 && p->ticks > greatest_ticks) {
 				greatest_ticks = p->ticks;
 				p_proc_ready = p;
 			}
@@ -31,7 +31,8 @@ PUBLIC void schedule()
 
 		if (!greatest_ticks) {
 			for (p = &FIRST_PROC; p < &LAST_PROC; p++) {
-				p->ticks = p->priority;
+				if (p->p_flags == 0)
+					p->ticks = p->priority;
 			}
 		}
 	}
@@ -98,12 +99,36 @@ PUBLIC int sys_get_ticks()
 	return ticks;
 }
 
+PRIVATE int deadlock(int src, int dest)
+{/*
+	struct proc* p = proc_table + dest;
+
+	while (1) {
+		if (p->p_flags & SENDING) {
+			if (p->p_sendto == src) {
+				p = proc_table + dest;
+				do {
+					p = proc_table + p->p_sendto;
+				} while (p != proc_table + src);
+
+				return 1;
+			}
+			//p = proc_table + p->p_sendto;
+		}
+		else {
+			break;
+		}
+	}
+	*/
+	return 0;
+}
+
 
 /*****************************************************************************
  *                                sys_msg_send
  *****************************************************************************/
 /**
- * <Ring 0> Send a message to the dest proc.
+ * <Ring 0> Send a message to the dest proc mail box.
  * @param current  The caller, the sender.
  * @param dest     To whom the message is sent.
  * @param m        The message.
@@ -131,7 +156,7 @@ PUBLIC int sys_msg_send(int pid, int dest, MESSAGE* m, PROCESS* current)
 		p_dest->p_flags &= ~RECEIVING; /* dest has received the msg */
 	}
 	else { /* dest is not waiting for the msg */
-		//TODO
+		p_dest->p_flags =SENDING;
 		return 1;
 	}
 
@@ -143,7 +168,7 @@ PUBLIC int sys_msg_send(int pid, int dest, MESSAGE* m, PROCESS* current)
  *                                sys_msg_receive
  *****************************************************************************/
 /**
- * <Ring 0> Try to get a message from the src proc.
+ * <Ring 0> Try to get a message from the mail box.
  *
  * @param current The caller, the proc who wanna receive.
  * @param src     From whom the message will be received.
@@ -155,7 +180,7 @@ PUBLIC int sys_msg_receive(int src, int dest, MESSAGE* m, PROCESS* current)
 {
 	PROCESS* p_recv = current;
 
-	if ((0) &&
+	if ((p_recv->has_int_msg) &&
 	    ((src == ANY) || (src == INTERRUPT))) {
 		/* There is an interrupt needs p_who_wanna_recv's handling and
 		 * p_who_wanna_recv is ready to handle it.
@@ -173,9 +198,6 @@ PUBLIC int sys_msg_receive(int src, int dest, MESSAGE* m, PROCESS* current)
 
 	if ( (p_recv->nr_recvmsg >0) &&
 				(src == ANY || src >= 0 && src < NR_TASKS + NR_PROCS) ) {
-		/* p_who_wanna_recv wants to receive a message and there are
-		 * messaged in the queue.
-		 */
 		 /* copy the message */
 		 //phys_copy(va2la(proc2pid(p_recv), m),
 		//		va2la(proc2pid(p_recv), p_recv->msg_head),
@@ -190,9 +212,6 @@ PUBLIC int sys_msg_receive(int src, int dest, MESSAGE* m, PROCESS* current)
 		 p_recv->msg_head = (p_recv->msg_head+1)%MAX_MSG;
 	}
 	else {  /* nobody's sending any msg */
-		/* Set p_flags so that p_who_wanna_recv will not
-		 * be scheduled until it is unblocked.
-		 */
 		p_recv->p_flags |= RECEIVING;
 		return -1;
 	}

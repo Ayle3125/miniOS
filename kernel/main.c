@@ -69,10 +69,6 @@ PUBLIC int kernel_main()
 		p_proc->regs.esp = (u32)p_task_stack;
 		p_proc->regs.eflags = eflags;
 
-		//strcpy(msg.content, "Good News!");
-		//msg.RETVAL = 0x0;
-		//p_proc->msg_head = &msg;
-		//disp_str(proc_table[i].msg_head->content);
 		p_proc->p_flags = 0;
 		p_proc->msg_head = 0;
 		p_proc->has_int_msg = 0;
@@ -85,7 +81,6 @@ PUBLIC int kernel_main()
 		p_task++;
 		selector_ldt += 1 << 3;
 	}
-	//proc_table[0].ticks = proc_table[0].priority = 15;
 
 	k_reenter = 0;
 	ticks = 0;
@@ -116,7 +111,6 @@ int TestA()
 		//disp_str("A.");
 		MESSAGE msg;
 		reset_msg(&msg);
-		msg.type = GET_TICKS;
 		msg.RETVAL = i;
 		ret = sendmsg(1, 2, &msg);
 		if (ret==0){
@@ -144,7 +138,7 @@ int TestB()
 		//disp_str("B.");
 		msg.RETVAL = 0;
 		//disp_str(proc_table[0].msg_head->content);
-		ret = recvmsg(0, 1, &msg);
+		ret = recvmsg(2, 1, &msg);
 		//disp_str("Ticks:");
 		//disp_int(ret);
 		if (ret==0){
