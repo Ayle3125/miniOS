@@ -142,6 +142,7 @@ PUBLIC int sys_msg_send(int pid, int dest, MESSAGE* m, PROCESS* current)
 
 //	if ((p_dest->p_flags & RECEIVING) && p_dest->nr_recvmsg < MAX_MSG) {
 	if ( p_dest->nr_recvmsg < MAX_MSG) {
+		 p_dest->p_flags = RECEIVING;
 		 int tail = (p_dest->msg_head + p_dest->nr_recvmsg)%MAX_MSG;
 		 MESSAGE* msg_tail = &p_dest->msg_queue[tail];
 		//MESSAGE* msg_tail = p_dest->msg_head;
@@ -198,6 +199,7 @@ PUBLIC int sys_msg_receive(int src, int dest, MESSAGE* m, PROCESS* current)
 
 	if ( (p_recv->nr_recvmsg >0) &&
 				(src == ANY || src >= 0 && src < NR_TASKS + NR_PROCS) ) {
+			p_recv->p_flags = RECEIVING;
 		 /* copy the message */
 		 //phys_copy(va2la(proc2pid(p_recv), m),
 		//		va2la(proc2pid(p_recv), p_recv->msg_head),
